@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "id": "enderrelay",
+  "version": "${version}",
+  "name": "Ender Relay",
+  "description": "A mod that adds the Ender Relay from the Kenadian video!",
+  "authors": [
+    "xyzeva"
+  ],
+  "contact": {
+    "website": "https://kibty.town",
+    "repo": "https://github.com/xyzeva/ender-relay"
+  },
+  "license": "MIT",
+  "icon": "assets/enderrelay/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "town.kibty.enderrelay.EnderRelay"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "fabric": "*",
+    "minecraft": "${minecraft_version}"
+  },
+  "accessWidener": "enderrelay.accesswidener"
+}
