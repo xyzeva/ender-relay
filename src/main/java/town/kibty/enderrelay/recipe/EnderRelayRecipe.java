@@ -10,6 +10,7 @@ import net.minecraft.world.item.crafting.CustomRecipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.SimpleCraftingRecipeSerializer;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.dimension.BuiltinDimensionTypes;
 import town.kibty.enderrelay.EnderRelay;
 import town.kibty.enderrelay.block.EnderRelayBlockEntity;
 
@@ -36,6 +37,11 @@ public class EnderRelayRecipe extends CustomRecipe {
                     if (!gotItem.is(Items.COMPASS)) return false;
                     if (!CompassItem.isLodestoneCompass(gotItem)) return false;
                     if (CompassItem.getLodestonePosition(gotItem.getTag()) == null) return false;
+                    if (level.isClientSide) continue;
+                    GlobalPos pos = CompassItem.getLodestonePosition(gotItem.getTag());
+                    Level lodedstoneLevel = level.getServer().getLevel(pos.dimension());
+                    if (lodedstoneLevel.dimensionTypeId() != BuiltinDimensionTypes.END) return false;
+
                     continue;
                 }
                 if (!gotItem.is(item)) {

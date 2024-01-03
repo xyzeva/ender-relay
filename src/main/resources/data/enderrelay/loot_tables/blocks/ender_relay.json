@@ -21,7 +21,25 @@
       "entries": [
         {
           "type": "minecraft:item",
-          "name": "enderrelay:ender_relay"
+          "name": "enderrelay:ender_relay",
+          "functions": [
+            {
+              "function": "minecraft:copy_nbt",
+              "source": "block_entity",
+              "ops": [
+                {
+                  "source": "RelayPosition",
+                  "target": "BlockEntityTag.RelayPosition",
+                  "op": "replace"
+                },
+                {
+                  "source": "RelayDimensionId",
+                  "target": "BlockEntityTag.RelayDimensionId",
+                  "op": "replace"
+                }
+              ]
+            }
+          ]
         }
       ]
     }

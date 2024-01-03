@@ -82,9 +82,7 @@ public class EnderRelayBlock extends Block implements EntityBlock {
                 sendToLocation((ServerPlayer) player, (ServerLevel) level, enderRelayEntity.getX(), enderRelayEntity.getY(), enderRelayEntity.getZ());
             }
             return InteractionResult.sidedSuccess(level.isClientSide);
-        }
-
-        if (!level.isClientSide) {
+        } else if (blockState.getValue(CHARGED) && !level.isClientSide) {
             explode(level, blockPos);
             return InteractionResult.sidedSuccess(false);
         }
@@ -154,6 +152,10 @@ public class EnderRelayBlock extends Block implements EntityBlock {
             Vec3 vec32 = Vec3.atBottomCenterOf(blockPos).subtract(vec3).normalize();
             g = (float) Mth.wrapDegrees(Mth.atan2(vec32.z, vec32.x) * 57.2957763671875 - 90.0);
         } else {
+            player.displayClientMessage(
+                    Component.translatable("enderrelay.no_lodestone"),
+                    false
+            );
             return;
         }
         level.playSound(null, player.getOnPos(), SoundEvents.ENDERMAN_TELEPORT, SoundSource.BLOCKS, 1.0f, 1.0f); // TODO: Better sound effects (if you want to do something and can do some sound effect stuff, dm me)
