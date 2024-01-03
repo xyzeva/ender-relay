@@ -2,6 +2,7 @@ package town.kibty.enderrelay.block;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -9,6 +10,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
@@ -76,7 +78,10 @@ public class EnderRelayBlock extends Block implements EntityBlock {
 
             if(!level.isClientSide) {
                 if (enderRelayEntity.hasNoLocation()) {
-                    player.displayClientMessage(Component.translatable("enderrelay.unknown_destination"), true);
+                    player.displayClientMessage(
+                            Component.translatable("enderrelay.unknown_destination"),
+                            false
+                    );
                     return InteractionResult.FAIL;
                 }
                 sendToLocation((ServerPlayer) player, (ServerLevel) level, enderRelayEntity.getX(), enderRelayEntity.getY(), enderRelayEntity.getZ());
@@ -106,14 +111,20 @@ public class EnderRelayBlock extends Block implements EntityBlock {
             }
         };
         Vec3 vec3 = pos.getCenter();
-        level.explode(null, level.damageSources().badRespawnPointExplosion(vec3), explosionDamageCalculator, vec3, 5.0f, true, Level.ExplosionInteraction.BLOCK);
+        level.explode(
+                null,
+                level.damageSources().badRespawnPointExplosion(vec3),
+                explosionDamageCalculator,
+                vec3,
+                5.0f,
+                true, Level.ExplosionInteraction.BLOCK);
     }
 
     public static void light(@Nullable Entity entity, Level level, BlockPos blockPos, BlockState blockState) {
         BlockState newState = blockState.setValue(CHARGED, true);
         level.setBlock(blockPos, newState, 3);
         level.gameEvent(GameEvent.BLOCK_CHANGE, blockPos, GameEvent.Context.of(entity, newState));
-        level.playSound(null, blockPos, SoundEvents.RESPAWN_ANCHOR_CHARGE, SoundSource.BLOCKS, 1.0f, 1.0f); // TODO: Better sound effects (if you want to do something and can do some sound effect stuff, dm me)
+        level.playSound(null, blockPos, SoundEvents.END_PORTAL_FRAME_FILL, SoundSource.BLOCKS, 1.0f, 1.0f); // TODO: Better sound effects (if you want to do something and can do some sound effect stuff, dm me)
     }
 
     @Override
@@ -158,13 +169,40 @@ public class EnderRelayBlock extends Block implements EntityBlock {
             );
             return;
         }
+
+
         level.playSound(null, player.getOnPos(), SoundEvents.ENDERMAN_TELEPORT, SoundSource.BLOCKS, 1.0f, 1.0f); // TODO: Better sound effects (if you want to do something and can do some sound effect stuff, dm me)
+
         player.teleportTo(level, vec3.x, vec3.y, vec3.z, g, 0.0f);
+
+        // copied from PlayerList line 427
+        while (!level.noCollision(player) && player.getY() < (double)level.getMaxBuildHeight()) {
+            player.setPos(player.getX(), player.getY() + 1.0, player.getZ());
+        }
+
+        player.teleportTo(level, player.getX(), player.getY(), player.getZ(), g, 0.0f);
+
+        level.playSound(null, vec3.x, vec3.y, vec3.z, SoundEvents.ENDERMAN_TELEPORT, SoundSource.BLOCKS, 1.0f, 1.0f); // TODO: Better sound effects (if you want to do something and can do some sound effect stuff, dm me)
     }
 
     @Nullable
     @Override
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
         return new EnderRelayBlockEntity(pos, state);
+    }
+
+    @Override
+    public void animateTick(BlockState blockState, Level level, BlockPos blockPos, RandomSource randomSource) {
+        if (blockState.getValue(CHARGED)) {
+            // Mostly copied & modified from NetherPortalBlock
+            double d = (double)blockPos.getX() + randomSource.nextDouble();
+            double e = (double)blockPos.getY() + randomSource.nextDouble();
+            double f = (double)blockPos.getZ() + randomSource.nextDouble();
+            double g = ((double)randomSource.nextFloat() - 0.5) * 0.5;
+            double h = ((double)randomSource.nextFloat() - 0.5) * 0.5;
+            double j = ((double)randomSource.nextFloat() - 0.5) * 0.5;
+
+            level.addParticle(ParticleTypes.PORTAL, d, e, f, g, h, j);
+        }
     }
 }
